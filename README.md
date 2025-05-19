@@ -25,13 +25,6 @@ A sleek, responsive weather forecast web app that allows users to search for cur
 
 ---
 
-## 📸 Demo
-
-<!-- If you deployed it on GitHub Pages, add link below -->
-🌐 Live Demo: https://github.com/RohanM0205/weather-app.git
-
----
-
 ## 🔧 Setup Instructions
 
 1. **Clone the repository:**
