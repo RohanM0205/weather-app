@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #3b82f6, #93c5fd);
+            border-radius: 4px;
+        }
+        
+        /* Glassmorphism effect - Light Mode */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Glassmorphism effect - Dark Mode */
+        .dark .glass-card {
+            background: rgba(31, 41, 55, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(to right, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* Smooth transitions */
+        .smooth-transition {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Light Mode Background */
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+            color: #1e293b;
+        }
+
+        /* Dark Mode Background */
+        .dark body {
+            background: linear-gradient(to bottom right, #1e3a8a, #0c4a6e);
+            color: #e5e7eb;
+        }
+
+        /* Light Mode Text Colors */
+        .text-primary {
+            color: #1e293b;
+        }
+        .text-secondary {
+            color: #475569;
+        }
+
+        /* Dark Mode Text Colors */
+        .dark .text-primary {
+            color: #f8fafc;
+        }
+        .dark .text-secondary {
+            color: #e2e8f0;
+        }
+
+        /* Control Buttons - Light Mode */
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+
+        /* Control Buttons - Dark Mode */
+        .dark .control-btn {
+            background: rgba(31, 41, 55, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .dark .control-btn:hover {
+            background: rgba(31, 41, 55, 1);
+        }
+
+        /* Search Input - Light Mode */
+        .search-input {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Search Input - Dark Mode */
+        .dark .search-input {
+            background: rgba(31, 41, 55, 0.95);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Icons - Light Mode */
+        .icon-primary {
+            color: #3b82f6;
+        }
+        .icon-secondary {
+            color: #64748b;
+        }
+
+        /* Icons - Dark Mode */
+        .dark .icon-primary {
+            color: #60a5fa;
+        }
+        .dark .icon-secondary {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-3 sm:p-4 md:p-6">
+    <div class="container mx-auto max-w-4xl">
+        <!-- Control Buttons -->
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex gap-2">
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="control-btn p-2 rounded-full smooth-transition" title="Toggle theme">
+                    <i class="fas fa-sun icon-primary"></i>
+                </button>
+                
+                <!-- Recent Searches Dropdown -->
+                <div class="relative">
+                    <button id="historyBtn" class="control-btn p-2 rounded-full smooth-transition" title="Recent searches">
+                        <i class="fas fa-history icon-primary"></i>
+                    </button>
+                    <div id="historyDropdown" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                        <div class="py-1 text-sm max-h-60 overflow-y-auto" id="historyList"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                <!-- View Toggle -->
+                <button id="viewToggle" class="control-btn px-3 py-1 rounded-lg smooth-transition text-sm font-medium">
+                    <span class="text-primary">Advanced</span>
+                </button>
+                
+                <!-- Unit Toggle -->
+                <button id="unitToggle" class="control-btn px-3 py-1 rounded-lg smooth-transition text-sm font-medium">
+                    <span class="text-primary">°C / °F</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <h1 class="text-2xl sm:text-3xl font-bold text-center gradient-text my-4 sm:my-6">Weather Forecast</h1>
+        
+        <!-- Search Bar -->
+        <div class="flex justify-center mb-6 sm:mb-8">
+            <div class="relative w-full sm:max-w-md group">
+              <!-- Location Button -->
+              <button 
+                id="locateBtn"
+                class="absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center bg-blue-500 text-white rounded-l-lg hover:bg-blue-600 transition-colors"
+                aria-label="Use current location"
+                title="Use my current location"
+              >
+                <i class="fas fa-location-crosshairs text-sm sm:text-base"></i>
+              </button>
+          
+              <!-- Search Input -->
+              <input 
+                type="text" 
+                id="cityInput" 
+                placeholder="Enter city name..." 
+                class="search-input w-full pl-12 pr-16 pr-12 p-3 sm:p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-base sm:text-lg text-center font-semibold tracking-wide text-primary placeholder-gray-400 smooth-transition"
+                aria-label="Search for a city"
+              >
+          
+              <!-- Clear Button -->
+              <button 
+                id="clearBtn"
+                class="absolute right-12 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-500 text-base sm:text-lg px-2 hidden group-hover:block"
+                title="Clear"
+                aria-label="Clear search"
+                >
+               &times;
+              </button>
+          
+              <!-- Search Button -->
+              <button 
+                id="searchBtn" 
+                class="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition-colors"
+                aria-label="Search"
+              >
+                <i class="fas fa-search text-sm sm:text-base"></i>
+              </button>
+            </div>
+        </div>
+
+  
+        
+        <!-- Current Weather -->
+        <div id="currentWeather" class="glass-card rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 text-center hidden transform hover:scale-[1.01] smooth-transition">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-3 sm:mb-4 gap-2">
+                <h2 class="text-xl sm:text-2xl font-semibold text-primary" id="cityName">--</h2>
+                <span class="text-secondary text-sm sm:text-base" id="currentDate">--</span>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-around gap-4">
+                <div class="mb-3 sm:mb-0">
+                    <img id="weatherIcon" src="https://openweathermap.org/img/wn/10d@2x.png" alt="Weather Icon" class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto">
+                    <p id="weatherDesc" class="text-secondary capitalize text-sm sm:text-base">--</p>
+                </div>
+                <div class="text-4xl sm:text-5xl font-bold gradient-text" id="currentTemp">--°C</div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mt-2 sm:mt-0 text-xs sm:text-sm">
+                    <div class="flex items-center gap-1"><i class="fas fa-wind icon-primary"></i> <span class="text-secondary" id="windSpeed" title="Wind Speed">-- km/h</span></div>
+                    <div class="flex items-center gap-1"><i class="fas fa-tint icon-primary"></i> <span class="text-secondary" id="humidity" title="Humidity">--%</span></div>
+                    <div class="flex items-center gap-1"><i class="fas fa-temperature-low icon-primary"></i> <span class="text-secondary" id="feelsLike" title="Feels Like Temperature">--°C</span></div>
+                    <div class="flex items-center gap-1"><i class="fas fa-compress-arrows-alt icon-primary"></i> <span class="text-secondary" id="pressure" title="Atmospheric Pressure">-- hPa</span></div>
+                </div>
+            </div>
+
+            <!-- Advanced Metrics -->
+            <div id="advancedMetrics" class="hidden mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs sm:text-sm">
+                <div class="flex items-center gap-1"><i class="fas fa-eye icon-primary"></i> <span class="text-secondary" id="visibility" title="Visibility">-- km</span></div>
+                <div class="flex items-center gap-1"><i class="fas fa-cloud-rain icon-primary"></i> <span class="text-secondary" id="precip" title="Precipitation">-- mm</span></div>
+                <div class="flex items-center gap-1"><i class="fas fa-sun icon-primary"></i> <span class="text-secondary" id="uvIndex" title="UV Index">--</span></div>
+                <div class="flex items-center gap-1"><i class="fas fa-cloud icon-primary"></i> <span class="text-secondary" id="cloudCover" title="Cloud Cover">--%</span></div>
+            </div>
+        </div>
+
+        <!-- 5-Day Forecast -->
+        <h3 class="text-lg sm:text-xl font-semibold text-primary mb-3 sm:mb-4">5-Day Forecast</h3>
+        <div id="forecastContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <!-- Forecast cards will be inserted here by JavaScript -->
+            <div class="forecast-placeholder glass-card rounded-lg p-3 text-center animate-pulse h-32"></div>
+            <div class="forecast-placeholder glass-card rounded-lg p-3 text-center animate-pulse h-32"></div>
+            <div class="hidden sm:block forecast-placeholder glass-card rounded-lg p-3 text-center animate-pulse h-32"></div>
+            <div class="hidden md:block forecast-placeholder glass-card rounded-lg p-3 text-center animate-pulse h-32"></div>
+            <div class="hidden lg:block forecast-placeholder glass-card rounded-lg p-3 text-center animate-pulse h-32"></div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMsg" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 sm:p-4 hidden rounded-lg smooth-transition dark:bg-red-900 dark:border-red-700 dark:text-red-100">
+            <p class="text-sm sm:text-base"><i class="fas fa-exclamation-circle mr-2"></i>City not found. Please try again!</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
